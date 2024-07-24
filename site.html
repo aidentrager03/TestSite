@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .chat-container { max-width: 600px; margin: auto; padding: 20px; }
+        .chat-box { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+        .chat-input { width: 100%; padding: 10px; }
+        .user-message { text-align: right; color: blue; }
+        .bot-message { text-align: left; color: green; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
+    </div>
+
+    <script>
+        const API_URL = 'http://<ngrok-id>.ngrok.io/predict'; // Replace <ngrok-id> with your actual ngrok ID
+
+        async function sendMessage() {
+            const inputBox = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const userMessage = inputBox.value;
+            if (userMessage.trim() === '') return;
+
+            // Add user message to chat
+            const userMessageElem = document.createElement('div');
+            userMessageElem.className = 'user-message';
+            userMessageElem.textContent = userMessage;
+            chatBox.appendChild(userMessageElem);
+
+            // Clear input
+            inputBox.value = '';
+
+            // Send user message to the server
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt: userMessage })
+            });
+            const data = await response.json();
+
+            // Add bot response to chat
+            const botMessageElem = document.createElement('div');
+            botMessageElem.className = 'bot-message';
+            botMessageElem.textContent = data.response;
+            chatBox.appendChild(botMessageElem);
+
+            // Scroll chat to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
