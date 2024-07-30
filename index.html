@@ -24,8 +24,7 @@
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
     </div>
     <script>
-        const API_URL = 'https://bb73-35-245-119-133.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
-        let sessionId = localStorage.getItem('sessionId');
+        const API_URL = 'https://db4a-35-185-27-181.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
 
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
@@ -45,7 +44,7 @@
                     headers: { 
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ prompt: userMessage, session_id: sessionId }),
+                    body: JSON.stringify({ prompt: userMessage }),
                     credentials: 'include'
                 });
                 
@@ -60,10 +59,6 @@
                 
                 if (data.response) {
                     appendMessage('bot-message', data.response);
-                    if (data.session_id) {
-                        sessionId = data.session_id;
-                        localStorage.setItem('sessionId', sessionId);
-                    }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
                 } else {
