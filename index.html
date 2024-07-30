@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot</title>
+    <title>Chatbot with Conversation Continuity</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
         .chat-container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -24,8 +24,8 @@
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
     </div>
     <script>
-        const API_URL = 'https://981f-34-148-175-154.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
-        let conversationHistory = [];
+        const API_URL = 'https://bb73-35-245-119-133.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
+        let sessionId = localStorage.getItem('sessionId');
 
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
@@ -44,9 +44,9 @@
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Session-ID': localStorage.getItem('sessionId') || ''
                     },
-                    body: JSON.stringify({ prompt: userMessage })
+                    body: JSON.stringify({ prompt: userMessage, session_id: sessionId }),
+                    credentials: 'include'
                 });
                 
                 if (!response.ok) {
@@ -60,12 +60,9 @@
                 
                 if (data.response) {
                     appendMessage('bot-message', data.response);
-                    conversationHistory.push({ role: 'user', content: userMessage });
-                    conversationHistory.push({ role: 'assistant', content: data.response });
-                    
-                    // Limit history to last 10 exchanges
-                    if (conversationHistory.length > 20) {
-                        conversationHistory = conversationHistory.slice(-20);
+                    if (data.session_id) {
+                        sessionId = data.session_id;
+                        localStorage.setItem('sessionId', sessionId);
                     }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
