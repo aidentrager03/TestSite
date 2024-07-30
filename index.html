@@ -24,7 +24,7 @@
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
     </div>
     <script>
-        const API_URL = 'https://ffcd-35-199-184-254.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://6591-34-74-68-1.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
 
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
@@ -32,23 +32,16 @@
             const userMessage = inputBox.value.trim();
             if (userMessage === '') return;
             
-            // Add user message to chat
             appendMessage('user-message', userMessage);
-            
-            // Clear input
             inputBox.value = '';
             
-            // Show typing indicator
             const typingIndicator = appendMessage('bot-message', 'Typing...');
             typingIndicator.classList.add('typing-indicator');
             
             try {
-                // Send user message to the server
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: userMessage })
                 });
                 
@@ -57,11 +50,10 @@
                 }
                 
                 const data = await response.json();
+                console.log('API Response:', data); // For debugging
                 
-                // Remove typing indicator
                 chatBox.removeChild(typingIndicator);
                 
-                // Add bot response to chat
                 if (data.response) {
                     appendMessage('bot-message', data.response);
                 } else if (data.error) {
@@ -71,9 +63,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                // Remove typing indicator
                 chatBox.removeChild(typingIndicator);
-                // Show error message
                 appendMessage('bot-message error-message', `Error: ${error.message}`);
             }
         }
@@ -87,7 +77,6 @@
             messageContent.textContent = text;
             messageElem.appendChild(messageContent);
             chatBox.appendChild(messageElem);
-            // Scroll chat to bottom
             chatBox.scrollTop = chatBox.scrollHeight;
             return messageElem;
         }
