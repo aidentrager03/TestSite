@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .chat-container { max-width: 600px; margin: auto; padding: 20px; }
-        .chat-box { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
-        .chat-input { width: 100%; padding: 10px; }
-        .user-message { text-align: right; color: blue; }
-        .bot-message { text-align: left; color: green; }
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
+        .chat-container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .chat-box { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; margin-bottom: 10px; border-radius: 4px; }
+        .chat-input { width: calc(100% - 22px); padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .user-message { text-align: right; color: #2979FF; margin: 10px 0; }
+        .bot-message { text-align: left; color: #00C853; margin: 10px 0; }
+        .message { max-width: 80%; padding: 8px 12px; border-radius: 18px; display: inline-block; word-wrap: break-word; }
+        .user-message .message { background-color: #E3F2FD; }
+        .bot-message .message { background-color: #E8F5E9; }
+        .typing-indicator { color: #888; font-style: italic; }
     </style>
 </head>
 <body>
@@ -18,43 +22,67 @@
         <div class="chat-box" id="chat-box"></div>
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
     </div>
-
     <script>
-        const API_URL = 'https://468c-34-145-90-109.ngrok-free.app//predict'; // Replace <ngrok-id> with your actual ngrok ID
-
+        const API_URL = 'https://2f36-34-168-42-27.ngrok-free.app/predict'; // Make sure this URL is correct
+        
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
             const chatBox = document.getElementById('chat-box');
-            const userMessage = inputBox.value;
-            if (userMessage.trim() === '') return;
-
+            const userMessage = inputBox.value.trim();
+            if (userMessage === '') return;
+            
             // Add user message to chat
-            const userMessageElem = document.createElement('div');
-            userMessageElem.className = 'user-message';
-            userMessageElem.textContent = userMessage;
-            chatBox.appendChild(userMessageElem);
-
+            appendMessage('user-message', userMessage);
+            
             // Clear input
             inputBox.value = '';
-
-            // Send user message to the server
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ prompt: userMessage })
-            });
-            const data = await response.json();
-
-            // Add bot response to chat
-            const botMessageElem = document.createElement('div');
-            botMessageElem.className = 'bot-message';
-            botMessageElem.textContent = data.response;
-            chatBox.appendChild(botMessageElem);
-
+            
+            // Show typing indicator
+            const typingIndicator = appendMessage('bot-message', 'Typing...');
+            typingIndicator.classList.add('typing-indicator');
+            
+            try {
+                // Send user message to the server
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: userMessage })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                chatBox.removeChild(typingIndicator);
+                
+                // Add bot response to chat
+                appendMessage('bot-message', data.response);
+            } catch (error) {
+                console.error('Error:', error);
+                // Remove typing indicator
+                chatBox.removeChild(typingIndicator);
+                // Show error message
+                appendMessage('bot-message', 'Sorry, an error occurred. Please try again.');
+            }
+        }
+        
+        function appendMessage(className, text) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElem = document.createElement('div');
+            messageElem.className = className;
+            const messageContent = document.createElement('span');
+            messageContent.className = 'message';
+            messageContent.textContent = text;
+            messageElem.appendChild(messageContent);
+            chatBox.appendChild(messageElem);
             // Scroll chat to bottom
             chatBox.scrollTop = chatBox.scrollHeight;
+            return messageElem;
         }
     </script>
 </body>
