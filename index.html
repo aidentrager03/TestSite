@@ -24,7 +24,8 @@
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
     </div>
     <script>
-        const API_URL = 'https://6591-34-74-68-1.ngrok-free.app/predict'; // Update this URL with your current ngrok URL 
+        const API_URL = 'https://981f-34-148-175-154.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
+        let conversationHistory = [];
 
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
@@ -41,7 +42,10 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Session-ID': localStorage.getItem('sessionId') || ''
+                    },
                     body: JSON.stringify({ prompt: userMessage })
                 });
                 
@@ -56,6 +60,13 @@
                 
                 if (data.response) {
                     appendMessage('bot-message', data.response);
+                    conversationHistory.push({ role: 'user', content: userMessage });
+                    conversationHistory.push({ role: 'assistant', content: data.response });
+                    
+                    // Limit history to last 10 exchanges
+                    if (conversationHistory.length > 20) {
+                        conversationHistory = conversationHistory.slice(-20);
+                    }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
                 } else {
