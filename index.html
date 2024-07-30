@@ -15,6 +15,7 @@
         .user-message .message { background-color: #E3F2FD; }
         .bot-message .message { background-color: #E8F5E9; }
         .typing-indicator { color: #888; font-style: italic; }
+        .error-message { color: #D32F2F; font-style: italic; }
     </style>
 </head>
 <body>
@@ -23,8 +24,8 @@
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
     </div>
     <script>
-        const API_URL = 'https://eda3-34-106-149-143.ngrok-free.app/predict'; // Make sure this URL is correct
-        
+        const API_URL = 'https://eda3-34-106-149-143.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
+
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
             const chatBox = document.getElementById('chat-box');
@@ -61,13 +62,19 @@
                 chatBox.removeChild(typingIndicator);
                 
                 // Add bot response to chat
-                appendMessage('bot-message', data.response);
+                if (data.response) {
+                    appendMessage('bot-message', data.response);
+                } else if (data.error) {
+                    appendMessage('bot-message error-message', `Error: ${data.error}`);
+                } else {
+                    appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
+                }
             } catch (error) {
                 console.error('Error:', error);
                 // Remove typing indicator
                 chatBox.removeChild(typingIndicator);
                 // Show error message
-                appendMessage('bot-message', 'Sorry, an error occurred. Please try again.');
+                appendMessage('bot-message error-message', `Error: ${error.message}`);
             }
         }
         
