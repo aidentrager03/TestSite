@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Context-Aware Chatbot</title>
+    <title>Context-Aware Chatbot with Document Upload</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
-        .chat-container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .chat-box { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; margin-bottom: 10px; border-radius: 4px; }
-        .chat-input { width: calc(100% - 22px); padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .chat-input { width: calc(100% - 22px); padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; }
         .user-message { text-align: right; color: #2979FF; margin: 10px 0; }
         .bot-message { text-align: left; color: #00C853; margin: 10px 0; }
         .message { max-width: 80%; padding: 8px 12px; border-radius: 18px; display: inline-block; word-wrap: break-word; }
@@ -16,15 +16,26 @@
         .bot-message .message { background-color: #E8F5E9; }
         .typing-indicator { color: #888; font-style: italic; }
         .error-message { color: #D32F2F; font-style: italic; }
+        .file-upload { margin-bottom: 10px; }
+        .document-list { margin-top: 20px; }
+        .document-item { background-color: #f0f0f0; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <div class="chat-container">
+    <div class="container">
+        <h1>Context-Aware Chatbot with Document Upload</h1>
+        <div class="file-upload">
+            <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
+            <button onclick="uploadDocument()">Upload Document</button>
+        </div>
         <div class="chat-box" id="chat-box"></div>
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
+        <div class="document-list" id="document-list">
+            <h3>Uploaded Documents:</h3>
+        </div>
     </div>
     <script>
-        const API_URL = 'https://98fc-34-127-42-109.ngrok-free.app/predict'; // Update this URL with your current ngrok URL WORKING WITH CONTEXT
+        const API_URL = 'https://98fc-34-127-42-109.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -40,7 +51,7 @@
             typingIndicator.classList.add('typing-indicator');
             
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(`${API_URL}/predict`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -56,18 +67,16 @@
                 }
                 
                 const data = await response.json();
-                console.log('API Response:', data); // For debugging
+                console.log('API Response:', data);
                 
                 chatBox.removeChild(typingIndicator);
                 
                 if (data.response) {
                     appendMessage('bot-message', data.response);
                     
-                    // Update conversation history
                     conversationHistory.push(`Human: ${userMessage}`);
                     conversationHistory.push(`Assistant: ${data.response}`);
                     
-                    // Limit history to last 10 exchanges (20 messages)
                     if (conversationHistory.length > 20) {
                         conversationHistory = conversationHistory.slice(-20);
                     }
@@ -95,6 +104,63 @@
             chatBox.scrollTop = chatBox.scrollHeight;
             return messageElem;
         }
+
+        async function uploadDocument() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                alert(result.message);
+                fileInput.value = '';
+                updateDocumentList();
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error uploading document: ${error.message}`);
+            }
+        }
+
+        async function updateDocumentList() {
+            try {
+                const response = await fetch(`${API_URL}/documents`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const documents = await response.json();
+                const documentList = document.getElementById('document-list');
+                documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+
+                documents.forEach(doc => {
+                    const docItem = document.createElement('div');
+                    docItem.className = 'document-item';
+                    docItem.textContent = doc;
+                    documentList.appendChild(docItem);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error fetching document list: ${error.message}`);
+            }
+        }
+
+        // Initial update of document list
+        updateDocumentList();
     </script>
 </body>
 </html>
