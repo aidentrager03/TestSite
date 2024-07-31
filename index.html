@@ -26,6 +26,16 @@
     <script>
         const API_URL = 'https://dc38-35-247-157-217.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
 
+        // Load chat history from local storage
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+        // Display chat history on page load
+        window.onload = function() {
+            chatHistory.forEach(message => {
+                appendMessage(message.type, message.text);
+            });
+        }
+
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
             const chatBox = document.getElementById('chat-box');
@@ -59,6 +69,13 @@
                 
                 if (data.response) {
                     appendMessage('bot-message', data.response);
+                    
+                    // Update chat history
+                    chatHistory.push({type: 'user-message', text: userMessage});
+                    chatHistory.push({type: 'bot-message', text: data.response});
+                    
+                    // Save updated history to local storage
+                    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
                 } else {
