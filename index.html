@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Context-Aware Chatbot</title>
+    <title>Chatbot with Conversation Continuity</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
         .chat-container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -16,22 +16,19 @@
         .bot-message .message { background-color: #E8F5E9; }
         .typing-indicator { color: #888; font-style: italic; }
         .error-message { color: #D32F2F; font-style: italic; }
-        .debug-info { font-family: monospace; background-color: #f0f0f0; padding: 10px; margin-top: 20px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-box" id="chat-box"></div>
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
-        <div class="debug-info" id="debug-info"></div>
     </div>
     <script>
-        const API_URL = 'https://b6a5-34-124-136-213.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://4ada-34-16-176-185.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
 
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
             const chatBox = document.getElementById('chat-box');
-            const debugInfo = document.getElementById('debug-info');
             const userMessage = inputBox.value.trim();
             if (userMessage === '') return;
             
@@ -42,7 +39,6 @@
             typingIndicator.classList.add('typing-indicator');
             
             try {
-                debugInfo.textContent = 'Sending request...';
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 
@@ -52,15 +48,12 @@
                     credentials: 'include'
                 });
                 
-                debugInfo.textContent += '\nReceived response.';
-                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
                 console.log('API Response:', data); // For debugging
-                debugInfo.textContent += `\nAPI Response: ${JSON.stringify(data)}`;
                 
                 chatBox.removeChild(typingIndicator);
                 
@@ -73,7 +66,6 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                debugInfo.textContent += `\nError: ${error.message}`;
                 chatBox.removeChild(typingIndicator);
                 appendMessage('bot-message error-message', `Error: ${error.message}`);
             }
