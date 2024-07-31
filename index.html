@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot with Conversation Continuity</title>
+    <title>Context-Aware Chatbot</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
         .chat-container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -24,17 +24,7 @@
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
     </div>
     <script>
-        const API_URL = 'https://dc38-35-247-157-217.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
-
-        // Load chat history from local storage
-        let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
-
-        // Display chat history on page load
-        window.onload = function() {
-            chatHistory.forEach(message => {
-                appendMessage(message.type, message.text);
-            });
-        }
+        const API_URL = 'https://1f64-34-143-205-3.ngrok-free.app/predict'; // Update this URL with your current ngrok URL
 
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
@@ -69,13 +59,6 @@
                 
                 if (data.response) {
                     appendMessage('bot-message', data.response);
-                    
-                    // Update chat history
-                    chatHistory.push({type: 'user-message', text: userMessage});
-                    chatHistory.push({type: 'bot-message', text: data.response});
-                    
-                    // Save updated history to local storage
-                    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
                 } else {
