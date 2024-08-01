@@ -24,7 +24,7 @@
     <div class="container">
         <h1>Context-Aware Chatbot with Document Handling</h1>
         <div class="upload-section">
-            <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
+            <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx,.py">
             <button onclick="uploadDocument()">Upload Document</button>
         </div>
         <div class="chat-box" id="chat-box"></div>
@@ -34,7 +34,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'https://d405-35-203-156-79.ngrok-free.app'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://a2b7-35-247-146-169.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -143,11 +143,6 @@
                 const response = await fetch(`${API_URL}/documents`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Received non-JSON response from server");
                 }
 
                 const documents = await response.json();
