@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Driven Document Handler</title>
+    <title>Context-Aware Chatbot with Document Upload</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
             padding: 0;
-            line-height: 1.6;
         }
         .container {
             max-width: 800px;
@@ -20,18 +19,13 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        h1, h2 {
-            text-align: center;
-            color: #333;
-        }
         .chat-box {
             border: 1px solid #ccc;
             padding: 10px;
-            height: 300px;
+            height: 400px;
             overflow-y: scroll;
             margin-bottom: 10px;
             border-radius: 4px;
-            background-color: #f9f9f9;
         }
         .chat-input {
             width: calc(100% - 22px);
@@ -39,14 +33,15 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             margin-bottom: 10px;
-            font-size: 16px;
         }
         .user-message {
             text-align: right;
+            color: #2979FF;
             margin: 10px 0;
         }
         .bot-message {
             text-align: left;
+            color: #00C853;
             margin: 10px 0;
         }
         .message {
@@ -58,11 +53,9 @@
         }
         .user-message .message {
             background-color: #E3F2FD;
-            color: #0D47A1;
         }
         .bot-message .message {
             background-color: #E8F5E9;
-            color: #1B5E20;
         }
         .typing-indicator {
             color: #888;
@@ -72,74 +65,35 @@
             color: #D32F2F;
             font-style: italic;
         }
+        .upload-section {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
         .document-list {
-            margin-top: 20px;
+            margin-top: 10px;
             padding: 10px;
             background-color: #e0e0e0;
             border-radius: 4px;
-        }
-        .document-item {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 5px 10px;
-            margin: 5px 0;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .document-item button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .document-item button:hover {
-            background-color: #45a049;
-        }
-        .upload-form {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .upload-form input[type="file"] {
-            flex-grow: 1;
-            padding: 5px;
-        }
-        .upload-form button {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .upload-form button:hover {
-            background-color: #1E88E5;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>AI-Driven Document Handler</h1>
-        <div class="chat-box" id="chat-box"></div>
-        <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
-        
-        <h2>Document Management</h2>
-        <div class="upload-form">
-            <input type="file" id="file-upload" accept=".txt,.pdf,.doc,.docx">
+        <h1>Context-Aware Chatbot with Document Upload</h1>
+        <div class="upload-section">
+            <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
             <button onclick="uploadDocument()">Upload Document</button>
         </div>
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
         <div class="document-list" id="document-list">
-            <h3>Available Documents:</h3>
+            <h3>Uploaded Documents:</h3>
         </div>
     </div>
     <script>
-        const API_URL = 'https://8d12-34-87-146-35.ngrok-free.app'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://f082-34-143-207-240.ngrok-free.app'; // Update this URL with your current ngrok URL 
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -151,7 +105,7 @@
             appendMessage('user-message', userMessage);
             inputBox.value = '';
             
-            const typingIndicator = appendMessage('bot-message', 'Thinking...');
+            const typingIndicator = appendMessage('bot-message', 'Typing...');
             typingIndicator.classList.add('typing-indicator');
             
             try {
@@ -184,11 +138,6 @@
                     if (conversationHistory.length > 20) {
                         conversationHistory = conversationHistory.slice(-20);
                     }
-
-                    // Update document list
-                    if (data.documents) {
-                        updateDocumentList(data.documents);
-                    }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
                 } else {
@@ -215,7 +164,7 @@
         }
 
         async function uploadDocument() {
-            const fileInput = document.getElementById('file-upload');
+            const fileInput = document.getElementById('file-input');
             const file = fileInput.files[0];
             if (!file) {
                 alert('Please select a file to upload.');
@@ -245,54 +194,30 @@
             }
         }
 
-        async function updateDocumentList(documents) {
-            if (!documents) {
-                try {
-                    const response = await fetch(`${API_URL}/documents`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    documents = await response.json();
-                } catch (error) {
-                    console.error('Error fetching documents:', error);
-                    return;
-                }
-            }
-
-            const documentList = document.getElementById('document-list');
-            documentList.innerHTML = '<h3>Available Documents:</h3>';
-
-            documents.forEach(doc => {
-                const docItem = document.createElement('div');
-                docItem.className = 'document-item';
-                docItem.innerHTML = `
-                    <span>${doc}</span>
-                    <button onclick="viewDocument('${doc}')">View</button>
-                `;
-                documentList.appendChild(docItem);
-            });
-        }
-
-        async function viewDocument(filename) {
+        async function updateDocumentList() {
             try {
-                const response = await fetch(`${API_URL}/documents/${filename}`);
+                const response = await fetch(`${API_URL}/documents`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const content = await response.text();
-                alert(`Content of ${filename}:\n\n${content}`);
+                const documents = await response.json();
+                const documentList = document.getElementById('document-list');
+                documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+
+                documents.forEach(doc => {
+                    const docItem = document.createElement('div');
+                    docItem.textContent = doc;
+                    documentList.appendChild(docItem);
+                });
             } catch (error) {
                 console.error('Error:', error);
-                alert(`Error viewing document: ${error.message}`);
+                alert(`Error fetching document list: ${error.message}`);
             }
         }
 
-        // Call the initial document list update when the page loads
-        window.onload = function() {
-            updateDocumentList();
-            appendMessage('bot-message', 'Hello! I\'m your AI assistant. How can I help you today?');
-        };
+        // Initial update of document list
+        updateDocumentList();
     </script>
 </body>
 </html>
