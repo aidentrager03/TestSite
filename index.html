@@ -20,14 +20,14 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        h1 {
+        h1, h2 {
             text-align: center;
             color: #333;
         }
         .chat-box {
             border: 1px solid #ccc;
             padding: 10px;
-            height: 400px;
+            height: 300px;
             overflow-y: scroll;
             margin-bottom: 10px;
             border-radius: 4px;
@@ -78,10 +78,6 @@
             background-color: #e0e0e0;
             border-radius: 4px;
         }
-        .document-list h3 {
-            margin-top: 0;
-            color: #333;
-        }
         .document-item {
             background-color: #fff;
             border: 1px solid #ccc;
@@ -89,6 +85,41 @@
             padding: 5px 10px;
             margin: 5px 0;
             font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .document-item button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .document-item button:hover {
+            background-color: #45a049;
+        }
+        .upload-form {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .upload-form input[type="file"] {
+            flex-grow: 1;
+            padding: 5px;
+        }
+        .upload-form button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .upload-form button:hover {
+            background-color: #1E88E5;
         }
     </style>
 </head>
@@ -97,12 +128,18 @@
         <h1>AI-Driven Document Handler</h1>
         <div class="chat-box" id="chat-box"></div>
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
+        
+        <h2>Document Management</h2>
+        <div class="upload-form">
+            <input type="file" id="file-upload" accept=".txt,.pdf,.doc,.docx">
+            <button onclick="uploadDocument()">Upload Document</button>
+        </div>
         <div class="document-list" id="document-list">
             <h3>Available Documents:</h3>
         </div>
     </div>
     <script>
-        const API_URL = 'https://a5dd-34-125-254-60.ngrok-free.app'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://be17-34-125-254-60.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -175,35 +212,81 @@
             return messageElem;
         }
 
-        function updateDocumentList(documents) {
-            const documentList = document.getElementById('document-list');
-            documentList.innerHTML = '<h3>Available Documents:</h3>';
-            documents.forEach(doc => {
-                const docItem = document.createElement('div');
-                docItem.className = 'document-item';
-                docItem.textContent = doc;
-                documentList.appendChild(docItem);
-            });
+        async function uploadDocument() {
+            const fileInput = document.getElementById('file-upload');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                alert(result.message);
+                fileInput.value = '';
+                updateDocumentList();
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error uploading document: ${error.message}`);
+            }
         }
 
-        // Initial update of document list
-        async function initialDocumentListUpdate() {
+        async function updateDocumentList() {
             try {
                 const response = await fetch(`${API_URL}/documents`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
                 const documents = await response.json();
-                updateDocumentList(documents);
+                const documentList = document.getElementById('document-list');
+                documentList.innerHTML = '<h3>Available Documents:</h3>';
+
+                documents.forEach(doc => {
+                    const docItem = document.createElement('div');
+                    docItem.className = 'document-item';
+                    docItem.innerHTML = `
+                        <span>${doc}</span>
+                        <button onclick="viewDocument('${doc}')">View</button>
+                    `;
+                    documentList.appendChild(docItem);
+                });
             } catch (error) {
-                console.error('Error fetching document list:', error);
+                console.error('Error:', error);
                 const documentList = document.getElementById('document-list');
                 documentList.innerHTML = '<h3>Available Documents:</h3><p class="error-message">Failed to fetch document list.</p>';
             }
         }
 
+        async function viewDocument(filename) {
+            try {
+                const response = await fetch(`${API_URL}/documents/${filename}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const content = await response.text();
+                alert(`Content of ${filename}:\n\n${content}`);
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error viewing document: ${error.message}`);
+            }
+        }
+
         // Call the initial document list update when the page loads
-        window.onload = initialDocumentListUpdate;
+        window.onload = updateDocumentList;
     </script>
 </body>
 </html>
