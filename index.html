@@ -143,6 +143,9 @@
                     // Update document list if provided in the response
                     if (data.documents) {
                         updateDocumentListFromData(data.documents);
+                    } else {
+                        // If documents are not provided, fetch the latest list
+                        updateDocumentList();
                     }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
@@ -211,7 +214,7 @@
                 updateDocumentListFromData(documents);
             } catch (error) {
                 console.error('Error:', error);
-                alert(`Error fetching document list: ${error.message}`);
+                appendMessage('bot-message error-message', `Error fetching document list: ${error.message}`);
             }
         }
 
@@ -219,16 +222,23 @@
             const documentList = document.getElementById('document-list');
             documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
 
-            documents.forEach(doc => {
-                const docItem = document.createElement('div');
-                docItem.className = 'document-item';
-                docItem.textContent = doc;
-                documentList.appendChild(docItem);
-            });
+            if (documents.length === 0) {
+                documentList.innerHTML += '<p>No documents uploaded yet.</p>';
+            } else {
+                documents.forEach(doc => {
+                    const docItem = document.createElement('div');
+                    docItem.className = 'document-item';
+                    docItem.textContent = doc;
+                    documentList.appendChild(docItem);
+                });
+            }
         }
 
         // Initial update of document list
         updateDocumentList();
+
+        // Periodically update the document list
+        setInterval(updateDocumentList, 5000); // Update every 5 seconds
     </script>
 </body>
 </html>
