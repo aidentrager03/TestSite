@@ -99,7 +99,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'https://ae25-34-125-232-195.ngrok-free.app'; // Update this URL with your current ngrok URL 
+        const API_URL = 'https://a393-34-125-232-195.ngrok-free.app'; // Update this URL with your current ngrok URL 
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -115,52 +115,51 @@
             typingIndicator.classList.add('typing-indicator');
             
             try {
-                const response = await fetch(`${API_URL}/predict`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        prompt: userMessage,
-                        history: conversationHistory
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('API Response:', data);
-                
-                chatBox.removeChild(typingIndicator);
-                
-                if (data.response) {
-                    appendMessage('bot-message', data.response);
-                    
-                    if (data.file_action) {
-                        appendFileAction(data.file_action);
-                    }
-                    
-                    conversationHistory.push(`Human: ${userMessage}`);
-                    conversationHistory.push(`Assistant: ${data.response}`);
-                    
-                    if (conversationHistory.length > 20) {
-                        conversationHistory = conversationHistory.slice(-20);
-                    }
-
-                    updateDocumentList(data.documents);
-                } else if (data.error) {
-                    appendMessage('bot-message error-message', `Error: ${data.error}`);
-                } else {
-                    appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                chatBox.removeChild(typingIndicator);
-                appendMessage('bot-message error-message', `Error: ${error.message}`);
-            }
+        const response = await fetch(`${API_URL}/predict`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                prompt: userMessage,
+                history: conversationHistory
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || `HTTP error! status: ${response.status}`);
         }
+        
+        console.log('API Response:', data);
+        
+        chatBox.removeChild(typingIndicator);
+        
+        if (data.response) {
+            appendMessage('bot-message', data.response);
+            
+            if (data.file_action) {
+                appendFileAction(data.file_action);
+            }
+            
+            conversationHistory.push(`Human: ${userMessage}`);
+            conversationHistory.push(`Assistant: ${data.response}`);
+            
+            if (conversationHistory.length > 20) {
+                conversationHistory = conversationHistory.slice(-20);
+            }
+
+            updateDocumentList(data.documents);
+        } else {
+            appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        chatBox.removeChild(typingIndicator);
+        appendMessage('bot-message error-message', `Error: ${error.message}`);
+    }
+}
         
         function appendMessage(className, text) {
             const chatBox = document.getElementById('chat-box');
