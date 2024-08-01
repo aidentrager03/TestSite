@@ -94,7 +94,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://b9de-34-125-254-60.ngrok-free.app'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://7b1c-34-125-254-60.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -143,9 +143,6 @@
                     // Update document list if provided in the response
                     if (data.documents) {
                         updateDocumentListFromData(data.documents);
-                    } else {
-                        // If documents are not provided, fetch the latest list
-                        updateDocumentList();
                     }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
@@ -214,7 +211,7 @@
                 updateDocumentListFromData(documents);
             } catch (error) {
                 console.error('Error:', error);
-                appendMessage('bot-message error-message', `Error fetching document list: ${error.message}`);
+                alert(`Error fetching document list: ${error.message}`);
             }
         }
 
@@ -222,23 +219,16 @@
             const documentList = document.getElementById('document-list');
             documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
 
-            if (documents.length === 0) {
-                documentList.innerHTML += '<p>No documents uploaded yet.</p>';
-            } else {
-                documents.forEach(doc => {
-                    const docItem = document.createElement('div');
-                    docItem.className = 'document-item';
-                    docItem.textContent = doc;
-                    documentList.appendChild(docItem);
-                });
-            }
+            documents.forEach(doc => {
+                const docItem = document.createElement('div');
+                docItem.className = 'document-item';
+                docItem.textContent = doc;
+                documentList.appendChild(docItem);
+            });
         }
 
         // Initial update of document list
         updateDocumentList();
-
-        // Periodically update the document list
-        setInterval(updateDocumentList, 5000); // Update every 5 seconds
     </script>
 </body>
 </html>
