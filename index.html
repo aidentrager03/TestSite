@@ -76,18 +76,12 @@
             padding: 10px;
             background-color: #e0e0e0;
             border-radius: 4px;
-        }.file-action {
-            margin-top: 10px;
-            padding: 5px;
-            background-color: #e6f7ff;
-            border-radius: 4px;
-            font-style: italic;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Context-Aware Chatbot with Dynamic Document Handling</h1>
+        <h1>Context-Aware Chatbot with Document Upload</h1>
         <div class="upload-section">
             <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
             <button onclick="uploadDocument()">Upload Document</button>
@@ -115,51 +109,46 @@
             typingIndicator.classList.add('typing-indicator');
             
             try {
-        const response = await fetch(`${API_URL}/predict`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                prompt: userMessage,
-                history: conversationHistory
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error || `HTTP error! status: ${response.status}`);
-        }
-        
-        console.log('API Response:', data);
-        
-        chatBox.removeChild(typingIndicator);
-        
-        if (data.response) {
-            appendMessage('bot-message', data.response);
-            
-            if (data.file_action) {
-                appendFileAction(data.file_action);
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        prompt: userMessage,
+                        history: conversationHistory
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('API Response:', data);
+                
+                chatBox.removeChild(typingIndicator);
+                
+                if (data.response) {
+                    appendMessage('bot-message', data.response);
+                    
+                    conversationHistory.push(`Human: ${userMessage}`);
+                    conversationHistory.push(`Assistant: ${data.response}`);
+                    
+                    if (conversationHistory.length > 20) {
+                        conversationHistory = conversationHistory.slice(-20);
+                    }
+                } else if (data.error) {
+                    appendMessage('bot-message error-message', `Error: ${data.error}`);
+                } else {
+                    appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                chatBox.removeChild(typingIndicator);
+                appendMessage('bot-message error-message', `Error: ${error.message}`);
             }
-            
-            conversationHistory.push(`Human: ${userMessage}`);
-            conversationHistory.push(`Assistant: ${data.response}`);
-            
-            if (conversationHistory.length > 20) {
-                conversationHistory = conversationHistory.slice(-20);
-            }
-
-            updateDocumentList(data.documents);
-        } else {
-            appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        chatBox.removeChild(typingIndicator);
-        appendMessage('bot-message error-message', `Error: ${error.message}`);
-    }
-}
         
         function appendMessage(className, text) {
             const chatBox = document.getElementById('chat-box');
@@ -172,15 +161,6 @@
             chatBox.appendChild(messageElem);
             chatBox.scrollTop = chatBox.scrollHeight;
             return messageElem;
-        }
-
-        function appendFileAction(action) {
-            const chatBox = document.getElementById('chat-box');
-            const actionElem = document.createElement('div');
-            actionElem.className = 'file-action';
-            actionElem.textContent = action;
-            chatBox.appendChild(actionElem);
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function uploadDocument() {
@@ -214,19 +194,30 @@
             }
         }
 
-        function updateDocumentList(documents) {
-            const documentList = document.getElementById('document-list');
-            documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+        async function updateDocumentList() {
+            try {
+                const response = await fetch(`${API_URL}/documents`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-            documents.forEach(doc => {
-                const docItem = document.createElement('div');
-                docItem.textContent = doc;
-                documentList.appendChild(docItem);
-            });
+                const documents = await response.json();
+                const documentList = document.getElementById('document-list');
+                documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+
+                documents.forEach(doc => {
+                    const docItem = document.createElement('div');
+                    docItem.textContent = doc;
+                    documentList.appendChild(docItem);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error fetching document list: ${error.message}`);
+            }
         }
 
         // Initial update of document list
-        updateDocumentList([]);
+        updateDocumentList();
     </script>
 </body>
 </html>
