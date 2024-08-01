@@ -93,7 +93,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'https://70f6-34-125-228-228.ngrok-free.app'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://28d2-35-231-154-251.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -163,36 +163,40 @@
             return messageElem;
         }
 
-        async function uploadDocument() {
-            const fileInput = document.getElementById('file-input');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Please select a file to upload.');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', file);
-
+        async function updateDocumentList() {
             try {
-                const response = await fetch(`${API_URL}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const response = await fetch(`${API_URL}/documents`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const result = await response.json();
-                alert(result.message);
-                fileInput.value = '';
-                updateDocumentList();
+                const documents = await response.json();
+                console.log("Received documents:", documents); // Debug log
+
+                const documentList = document.getElementById('document-list');
+                documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+
+                if (Array.isArray(documents)) {
+                    documents.forEach(doc => {
+                        const docItem = document.createElement('div');
+                        docItem.className = 'document-item';
+                        docItem.textContent = doc;
+                        documentList.appendChild(docItem);
+                    });
+                } else if (documents.error) {
+                    throw new Error(documents.error);
+                } else {
+                    throw new Error("Received invalid document list format");
+                }
             } catch (error) {
-                console.error('Error:', error);
-                alert(`Error uploading document: ${error.message}`);
+                console.error('Error fetching document list:', error);
+                const documentList = document.getElementById('document-list');
+                documentList.innerHTML = '<h3>Uploaded Documents:</h3><p>Error fetching documents: ' + error.message + '</p>';
             }
         }
+
+        // Call updateDocumentList immediately and after uploading a document
+        updateDocumentList();
 
         async function updateDocumentList() {
             try {
