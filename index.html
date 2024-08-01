@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Context-Aware Chatbot with Document Handling</title>
+    <title>Context-Aware Chatbot with Document Upload</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
         .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -18,13 +18,14 @@
         .error-message { color: #D32F2F; font-style: italic; }
         .upload-section { margin-bottom: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 4px; }
         .document-list { margin-top: 10px; padding: 10px; background-color: #e0e0e0; border-radius: 4px; }
+        .document-item { background-color: #f8f8f8; padding: 5px; margin-bottom: 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Context-Aware Chatbot with Document Handling</h1>
+        <h1>Context-Aware Chatbot with Document Upload</h1>
         <div class="upload-section">
-            <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx,.py">
+            <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
             <button onclick="uploadDocument()">Upload Document</button>
         </div>
         <div class="chat-box" id="chat-box"></div>
@@ -34,7 +35,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'https://a2b7-35-247-146-169.ngrok-free.app'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://b10c-35-197-38-113.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -84,9 +85,6 @@
                 } else {
                     appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
                 }
-                
-                // Update document list after each message
-                updateDocumentList();
             } catch (error) {
                 console.error('Error:', error);
                 chatBox.removeChild(typingIndicator);
@@ -154,6 +152,7 @@
                 if (Array.isArray(documents)) {
                     documents.forEach(doc => {
                         const docItem = document.createElement('div');
+                        docItem.className = 'document-item';
                         docItem.textContent = doc;
                         documentList.appendChild(docItem);
                     });
