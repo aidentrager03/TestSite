@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Context-Aware Chatbot with Document Upload</title>
+    <title>Context-Aware Chatbot with Document Handling</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -65,26 +65,71 @@
             color: #D32F2F;
             font-style: italic;
         }
-        .upload-section {
+        .upload-section, .create-section, .document-list {
             margin-bottom: 10px;
             padding: 10px;
             background-color: #f0f0f0;
             border-radius: 4px;
         }
-        .document-list {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #e0e0e0;
-            border-radius: 4px;
+        .document-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .document-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #editContent {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Context-Aware Chatbot with Document Upload</h1>
+        <h1>Context-Aware Chatbot with Document Handling</h1>
         <div class="upload-section">
             <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
             <button onclick="uploadDocument()">Upload Document</button>
+        </div>
+        <div class="create-section">
+            <input type="text" id="new-filename" placeholder="Enter filename (with extension)">
+            <button onclick="createDocument()">Create New Document</button>
         </div>
         <div class="chat-box" id="chat-box"></div>
         <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
@@ -92,9 +137,20 @@
             <h3>Uploaded Documents:</h3>
         </div>
     </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Document</h2>
+            <textarea id="editContent"></textarea>
+            <button onclick="saveEditedDocument()">Save Changes</button>
+        </div>
+    </div>
+
     <script>
-        const API_URL = 'https://7d6e-35-236-187-187.ngrok-free.app'; // Update this URL with your current ngrok URL 
+        const API_URL = 'https://8793-34-105-14-184.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
+        let currentEditingFile = '';
 
         async function sendMessage() {
             const inputBox = document.getElementById('chat-input');
@@ -194,6 +250,40 @@
             }
         }
 
+        async function createDocument() {
+            const filenameInput = document.getElementById('new-filename');
+            const filename = filenameInput.value.trim();
+            if (!filename) {
+                alert('Please enter a filename.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/documents`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        filename: filename,
+                        content: ''
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                alert(result.message);
+                filenameInput.value = '';
+                updateDocumentList();
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error creating document: ${error.message}`);
+            }
+        }
+
         async function updateDocumentList() {
             try {
                 const response = await fetch(`${API_URL}/documents`);
@@ -207,12 +297,95 @@
 
                 documents.forEach(doc => {
                     const docItem = document.createElement('div');
-                    docItem.textContent = doc;
+                    docItem.className = 'document-item';
+                    docItem.innerHTML = `
+                        <span>${doc}</span>
+                        <div class="document-actions">
+                            <button onclick="editDocument('${doc}')">Edit</button>
+                            <button onclick="deleteDocument('${doc}')">Delete</button>
+                        </div>
+                    `;
                     documentList.appendChild(docItem);
                 });
             } catch (error) {
                 console.error('Error:', error);
                 alert(`Error fetching document list: ${error.message}`);
+            }
+        }
+
+        async function editDocument(filename) {
+            try {
+                const response = await fetch(`${API_URL}/documents/${filename}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const content = await response.text();
+                document.getElementById('editContent').value = content;
+                currentEditingFile = filename;
+                document.getElementById('editModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error fetching document content: ${error.message}`);
+            }
+        }
+
+        async function saveEditedDocument() {
+            const content = document.getElementById('editContent').value;
+            try {
+                const response = await fetch(`${API_URL}/documents/${currentEditingFile}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ content: content })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                alert(result.message);
+                document.getElementById('editModal').style.display = 'none';
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error saving document: ${error.message}`);
+            }
+        }
+
+        async function deleteDocument(filename) {
+            if (!confirm(`Are you sure you want to delete ${filename}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/documents/${filename}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                alert(result.message);
+                updateDocumentList();
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error deleting document: ${error.message}`);
+            }
+        }
+
+        // Close modal when clicking on <span> (x)
+        document.querySelector('.close').onclick = function() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('editModal')) {
+                document.getElementById('editModal').style.display = 'none';
             }
         }
 
