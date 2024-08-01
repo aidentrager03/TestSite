@@ -3,202 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Handler</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>AI-Driven Document Handler</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
             padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        .chat-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .chat-input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .user-message {
+            text-align: right;
+            margin: 10px 0;
+        }
+        .bot-message {
+            text-align: left;
+            margin: 10px 0;
+        }
+        .message {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 18px;
+            display: inline-block;
+            word-wrap: break-word;
+        }
+        .user-message .message {
+            background-color: #E3F2FD;
+            color: #0D47A1;
+        }
+        .bot-message .message {
+            background-color: #E8F5E9;
+            color: #1B5E20;
+        }
+        .typing-indicator {
+            color: #888;
+            font-style: italic;
+        }
+        .error-message {
+            color: #D32F2F;
+            font-style: italic;
+        }
+        .document-list {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
+        .document-item {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin: 5px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .document-item button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .document-item button:hover {
+            background-color: #45a049;
+        }
+        .upload-form {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .upload-form input[type="file"] {
+            flex-grow: 1;
+            padding: 5px;
+        }
+        .upload-form button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .upload-form button:hover {
+            background-color: #1E88E5;
         }
     </style>
 </head>
 <body>
-    <h1>Document Handler</h1>
     <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <h2>Upload Document</h2>
-                <form id="upload-form">
-                    <div class="form-group">
-                        <input type="file" id="file" name="file">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Upload</button>
-                </form>
-            </div>
-            <div class="col-md-6">
-                <h2>Documents</h2>
-                <ul id="documents-list"></ul>
-            </div>
+        <h1>AI-Driven Document Handler</h1>
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
+        
+        <h2>Document Management</h2>
+        <div class="upload-form">
+            <input type="file" id="file-upload" accept=".txt,.pdf,.doc,.docx">
+            <button onclick="uploadDocument()">Upload Document</button>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Create Document</h2>
-                <form id="create-form">
-                    <div class="form-group">
-                        <label for="filename">Filename:</label>
-                        <input type="text" id="filename" name="filename">
-                    </div>
-                    <div class="form-group">
-                        <label for="content">Content:</label>
-                        <textarea id="content" name="content"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create</button>
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Update Document</h2>
-                <form id="update-form">
-                    <div class="form-group">
-                        <label for="filename">Filename:</label>
-                        <input type="text" id="filename" name="filename">
-                    </div>
-                    <div class="form-group">
-                        <label for="content">Content:</label>
-                        <textarea id="content" name="content"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Delete Document</h2>
-                <form id="delete-form">
-                    <div class="form-group">
-                        <label for="filename">Filename:</label>
-                        <input type="text" id="filename" name="filename">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Delete</button>
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Generate Document</h2>
-                <form id="generate-form">
-                    <div class="form-group">
-                        <label for="prompt">Prompt:</label>
-                        <input type="text" id="prompt" name="prompt">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Generate</button>
-                </form>
-            </div>
+        <div class="document-list" id="document-list">
+            <h3>Available Documents:</h3>
         </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script>
-        const api_url = "https://0c12-34-16-161-48.ngrok-free.app";
+        const API_URL = 'https://8d12-34-87-146-35.ngrok-free.app'; // Update this URL with your current ngrok URL
+        let conversationHistory = [];
 
-        // Upload document
-        $("#upload-form").submit(function(e) {
-            e.preventDefault();
-            const file = $("#file")[0].files[0];
+        async function sendMessage() {
+            const inputBox = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const userMessage = inputBox.value.trim();
+            if (userMessage === '') return;
+            
+            appendMessage('user-message', userMessage);
+            inputBox.value = '';
+            
+            const typingIndicator = appendMessage('bot-message', 'Thinking...');
+            typingIndicator.classList.add('typing-indicator');
+            
+            try {
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        prompt: userMessage,
+                        history: conversationHistory
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('API Response:', data);
+                
+                chatBox.removeChild(typingIndicator);
+                
+                if (data.response) {
+                    appendMessage('bot-message', data.response);
+                    
+                    conversationHistory.push(`Human: ${userMessage}`);
+                    conversationHistory.push(`Assistant: ${data.response}`);
+                    
+                    if (conversationHistory.length > 20) {
+                        conversationHistory = conversationHistory.slice(-20);
+                    }
+
+                    // Update document list
+                    if (data.documents) {
+                        updateDocumentList(data.documents);
+                    }
+                } else if (data.error) {
+                    appendMessage('bot-message error-message', `Error: ${data.error}`);
+                } else {
+                    appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                chatBox.removeChild(typingIndicator);
+                appendMessage('bot-message error-message', `Error: ${error.message}`);
+            }
+        }
+        
+        function appendMessage(className, text) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElem = document.createElement('div');
+            messageElem.className = className;
+            const messageContent = document.createElement('span');
+            messageContent.className = 'message';
+            messageContent.textContent = text;
+            messageElem.appendChild(messageContent);
+            chatBox.appendChild(messageElem);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return messageElem;
+        }
+
+        async function uploadDocument() {
+            const fileInput = document.getElementById('file-upload');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append('file', file);
 
-            $.ajax({
-                url: api_url + "/upload",
-                type: "POST",
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
-                    console.log(response);
-                    listDocuments();
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            });
-        });
 
-        // List documents
-        function listDocuments() {
-            $.ajax({
-                url: api_url + "/documents",
-                type: "GET",
-                success: function(response) {
-                    const documents = response;
-                    const documentsList = $("#documents-list");
-                    documentsList.empty();
+                const result = await response.json();
+                alert(result.message);
+                fileInput.value = '';
+                updateDocumentList();
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error uploading document: ${error.message}`);
+            }
+        }
 
-                    documents.forEach(function(document) {
-                        const li = $("<li>").text(document);
-                        documentsList.append(li);
-                    });
+        async function updateDocumentList(documents) {
+            if (!documents) {
+                try {
+                    const response = await fetch(`${API_URL}/documents`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    documents = await response.json();
+                } catch (error) {
+                    console.error('Error fetching documents:', error);
+                    return;
                 }
+            }
+
+            const documentList = document.getElementById('document-list');
+            documentList.innerHTML = '<h3>Available Documents:</h3>';
+
+            documents.forEach(doc => {
+                const docItem = document.createElement('div');
+                docItem.className = 'document-item';
+                docItem.innerHTML = `
+                    <span>${doc}</span>
+                    <button onclick="viewDocument('${doc}')">View</button>
+                `;
+                documentList.appendChild(docItem);
             });
         }
-        listDocuments();
 
-        // Create document
-        $("#create-form").submit(function(e) {
-            e.preventDefault();
-            const filename = $("#filename").val();
-            const content = $("#content").val();
-
-            $.ajax({
-                url: api_url + "/create-document",
-                type: "POST",
-                data: JSON.stringify({ filename, content }),
-                contentType: "application/json",
-                success: function(response) {
-                    console.log(response);
-                    listDocuments();
+        async function viewDocument(filename) {
+            try {
+                const response = await fetch(`${API_URL}/documents/${filename}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            });
-        });
 
-        // Update document
-        $("#update-form").submit(function(e) {
-            e.preventDefault();
-            const filename = $("#filename").val();
-            const content = $("#content").val();
+                const content = await response.text();
+                alert(`Content of ${filename}:\n\n${content}`);
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error viewing document: ${error.message}`);
+            }
+        }
 
-            $.ajax({
-                url: api_url + "/update-document",
-                type: "POST",
-                data: JSON.stringify({ filename, content }),
-                contentType: "application/json",
-                success: function(response) {
-                    console.log(response);
-                    listDocuments();
-                }
-            });
-        });
-
-        // Delete document
-        $("#delete-form").submit(function(e) {
-            e.preventDefault();
-            const filename = $("#filename").val();
-
-            $.ajax({
-                url: api_url + "/delete-document",
-                type: "POST",
-                data: JSON.stringify({ filename }),
-                contentType: "application/json",
-                success: function(response) {
-                    console.log(response);
-                    listDocuments();
-                }
-            });
-        });
-
-        // Generate document
-        $("#generate-form").submit(function(e) {
-            e.preventDefault();
-            const prompt = $("#prompt").val();
-
-            $.ajax({
-                url: api_url + "/generate-document",
-                type: "POST",
-                data: JSON.stringify({ prompt }),
-                contentType: "application/json",
-                success: function(response) {
-                    console.log(response);
-                    listDocuments();
-                }
-            });
-        });
+        // Call the initial document list update when the page loads
+        window.onload = function() {
+            updateDocumentList();
+            appendMessage('bot-message', 'Hello! I\'m your AI assistant. How can I help you today?');
+        };
     </script>
 </body>
 </html>
