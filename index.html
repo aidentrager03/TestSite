@@ -93,7 +93,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'https://c4c2-34-168-131-159.ngrok-free.app'; // Update this URL with your current ngrok URL 
+        const API_URL = 'https://d142-35-197-103-129.ngrok-free.app'; // Update this URL with your current ngrok URL 
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -137,6 +137,10 @@
                     
                     if (conversationHistory.length > 20) {
                         conversationHistory = conversationHistory.slice(-20);
+                    }
+        
+                    if (data.documents) {
+                        updateDocumentList(data.documents);
                     }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
