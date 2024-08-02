@@ -5,7 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Context-Aware Chatbot with Dynamic Document Handling</title>
     <style>
-        /* ... (previous styles remain the same) ... */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .chat-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 400px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .chat-input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .user-message {
+            text-align: right;
+            color: #2979FF;
+            margin: 10px 0;
+        }
+        .bot-message {
+            text-align: left;
+            color: #00C853;
+            margin: 10px 0;
+        }
+        .message {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 18px;
+            display: inline-block;
+            word-wrap: break-word;
+        }
+        .user-message .message {
+            background-color: #E3F2FD;
+        }
+        .bot-message .message {
+            background-color: #E8F5E9;
+        }
+        .typing-indicator {
+            color: #888;
+            font-style: italic;
+        }
+        .error-message {
+            color: #D32F2F;
+            font-style: italic;
+        }
+        .upload-section {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .document-list {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
         .file-action {
             background-color: #e0f7fa;
             border-radius: 4px;
@@ -145,19 +216,30 @@
             }
         }
 
-        function updateDocumentList(documents) {
-            const documentList = document.getElementById('document-list');
-            documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+        async function updateDocumentList() {
+            try {
+                const response = await fetch(`${API_URL}/documents`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-            documents.forEach(doc => {
-                const docItem = document.createElement('div');
-                docItem.textContent = doc;
-                documentList.appendChild(docItem);
-            });
+                const documents = await response.json();
+                const documentList = document.getElementById('document-list');
+                documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+
+                documents.forEach(doc => {
+                    const docItem = document.createElement('div');
+                    docItem.textContent = doc;
+                    documentList.appendChild(docItem);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error fetching document list: ${error.message}`);
+            }
         }
 
         // Initial update of document list
-        updateDocumentList([]);
+        updateDocumentList();
     </script>
 </body>
 </html>
