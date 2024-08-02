@@ -32,7 +32,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'https://bccc-35-229-192-224.ngrok-free.app'; // Update this URL with your current ngrok URL
+        const API_URL = 'https://2d2b-34-87-134-58.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -48,19 +48,23 @@
             typingIndicator.classList.add('typing-indicator');
             
             try {
+                const requestBody = JSON.stringify({ 
+                    prompt: userMessage,
+                    history: conversationHistory.map(msg => String(msg))  // Ensure all items are strings
+                });
+                console.log('Request body:', requestBody);  // Log the request body
+                
                 const response = await fetch(`${API_URL}/predict`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
-                        prompt: userMessage,
-                        history: conversationHistory
-                    })
+                    body: requestBody
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
                 
                 const data = await response.json();
