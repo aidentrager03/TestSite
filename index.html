@@ -5,102 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Context-Aware Chatbot with Dynamic Document Handling</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .chat-box {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 400px;
-            overflow-y: scroll;
-            margin-bottom: 10px;
-            border-radius: 4px;
-        }
-        .chat-input {
-            width: calc(100% - 22px);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        .user-message {
-            text-align: right;
-            color: #2979FF;
-            margin: 10px 0;
-        }
-        .bot-message {
-            text-align: left;
-            color: #00C853;
-            margin: 10px 0;
-        }
-        .message {
-            max-width: 80%;
-            padding: 8px 12px;
-            border-radius: 18px;
-            display: inline-block;
-            word-wrap: break-word;
-        }
-        .user-message .message {
-            background-color: #E3F2FD;
-        }
-        .bot-message .message {
-            background-color: #E8F5E9;
-        }
-        .typing-indicator {
-            color: #888;
-            font-style: italic;
-        }
-        .error-message {
-            color: #D32F2F;
-            font-style: italic;
-        }
-        .upload-section {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 4px;
-        }
-        .document-list {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #e0e0e0;
-            border-radius: 4px;
-        }
-        .file-action {
-            background-color: #e0f7fa;
-            border-radius: 4px;
-            padding: 10px;
-            margin-top: 10px;
-            font-style: italic;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
+        .chat-container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .chat-box { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; margin-bottom: 10px; border-radius: 4px; }
+        .chat-input { width: calc(100% - 22px); padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .user-message { text-align: right; color: #2979FF; margin: 10px 0; }
+        .bot-message { text-align: left; color: #00C853; margin: 10px 0; }
+        .message { max-width: 80%; padding: 8px 12px; border-radius: 18px; display: inline-block; word-wrap: break-word; }
+        .user-message .message { background-color: #E3F2FD; }
+        .bot-message .message { background-color: #E8F5E9; }
+        .typing-indicator { color: #888; font-style: italic; }
+        .error-message { color: #D32F2F; font-style: italic; }
+        .file-action { background-color: #e0f7fa; border-radius: 4px; padding: 10px; margin-top: 10px; font-style: italic; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Context-Aware Chatbot with Dynamic Document Handling</h1>
-        <div class="upload-section">
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
+        <div>
             <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
             <button onclick="uploadDocument()">Upload Document</button>
         </div>
-        <div class="chat-box" id="chat-box"></div>
-        <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()">
-        <div class="document-list" id="document-list">
+        <div id="document-list">
             <h3>Uploaded Documents:</h3>
         </div>
     </div>
     <script>
-        const API_URL = 'https://bccc-35-229-192-224.ngrok-free.app'; // Update this URL with your current ngrok URL 
+        const API_URL = 'https://bccc-35-229-192-224.ngrok-free.app'; // Update this URL with your current ngrok URL
         let conversationHistory = [];
 
         async function sendMessage() {
