@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,64 +97,58 @@
         let conversationHistory = [];
 
         async function sendMessage() {
-    const inputBox = document.getElementById('chat-input');
-    const chatBox = document.getElementById('chat-box');
-    const userMessage = inputBox.value.trim();
-    if (userMessage === '') return;
-    
-    appendMessage('user-message', userMessage);
-    inputBox.value = '';
-    
-    const typingIndicator = appendMessage('bot-message', 'Typing...');
-    typingIndicator.classList.add('typing-indicator');
-    
-    try {
-        const response = await fetch(`${API_URL}/predict`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                prompt: userMessage,
-                history: conversationHistory
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('API Response:', data);
-        
-        chatBox.removeChild(typingIndicator);
-        
-        if (data.response) {
-            appendMessage('bot-message', data.response);
+            const inputBox = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const userMessage = inputBox.value.trim();
+            if (userMessage === '') return;
             
-            conversationHistory.push(`Human: ${userMessage}`);
-            conversationHistory.push(`Assistant: ${data.response}`);
+            appendMessage('user-message', userMessage);
+            inputBox.value = '';
             
-            if (conversationHistory.length > 20) {
-                conversationHistory = conversationHistory.slice(-20);
+            const typingIndicator = appendMessage('bot-message', 'Typing...');
+            typingIndicator.classList.add('typing-indicator');
+            
+            try {
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        prompt: userMessage,
+                        history: conversationHistory
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('API Response:', data);
+                
+                chatBox.removeChild(typingIndicator);
+                
+                if (data.response) {
+                    appendMessage('bot-message', data.response);
+                    
+                    conversationHistory.push(`Human: ${userMessage}`);
+                    conversationHistory.push(`Assistant: ${data.response}`);
+                    
+                    if (conversationHistory.length > 20) {
+                        conversationHistory = conversationHistory.slice(-20);
+                    }
+                } else if (data.error) {
+                    appendMessage('bot-message error-message', `Error: ${data.error}`);
+                } else {
+                    appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                chatBox.removeChild(typingIndicator);
+                appendMessage('bot-message error-message', `Error: ${error.message}`);
             }
-
-            if (data.documents) {
-                updateDocumentList(data.documents);
-            }
-        } else if (data.error) {
-            appendMessage('bot-message error-message', `Error: ${data.error}`);
-        } else {
-            appendMessage('bot-message error-message', 'Received an unexpected response from the server.');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        chatBox.removeChild(typingIndicator);
-        appendMessage('bot-message error-message', `Error: ${error.message}`);
-    }
-}
-
-
         
         function appendMessage(className, text) {
             const chatBox = document.getElementById('chat-box');
@@ -201,15 +194,27 @@
             }
         }
 
-        function updateDocumentList(documents) {
-    const documentList = document.getElementById('document-list');
-    documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
-    documents.forEach(doc => {
-        const docItem = document.createElement('div');
-        docItem.textContent = doc;
-        documentList.appendChild(docItem);
-    });
-}
+        async function updateDocumentList() {
+            try {
+                const response = await fetch(`${API_URL}/documents`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const documents = await response.json();
+                const documentList = document.getElementById('document-list');
+                documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+
+                documents.forEach(doc => {
+                    const docItem = document.createElement('div');
+                    docItem.textContent = doc;
+                    documentList.appendChild(docItem);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error fetching document list: ${error.message}`);
+            }
+        }
 
         // Initial update of document list
         updateDocumentList();
