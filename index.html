@@ -93,7 +93,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'https://8e27-34-125-110-124.ngrok-free.app'; // Update this URL with your current ngrok URL  
+        const API_URL = 'https://785f-35-237-229-13.ngrok-free.app'; // Update this URL with your current ngrok URL  
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -138,6 +138,11 @@
                     if (conversationHistory.length > 20) {
                         conversationHistory = conversationHistory.slice(-20);
                     }
+        
+                    // Update the document list if it has changed
+                    if (data.documents) {
+                        updateDocumentListFromResponse(data.documents);
+                    }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
                 } else {
@@ -148,6 +153,17 @@
                 chatBox.removeChild(typingIndicator);
                 appendMessage('bot-message error-message', `Error: ${error.message}`);
             }
+        }
+        
+        function updateDocumentListFromResponse(documents) {
+            const documentList = document.getElementById('document-list');
+            documentList.innerHTML = '<h3>Uploaded Documents:</h3>';
+        
+            documents.forEach(doc => {
+                const docItem = document.createElement('div');
+                docItem.textContent = doc;
+                documentList.appendChild(docItem);
+            });
         }
         
         function appendMessage(className, text) {
@@ -217,7 +233,7 @@
         }
 
         // Initial update of document list
-        updateDocumentList();
+        // updateDocumentList();
     </script>
 </body>
 </html>
