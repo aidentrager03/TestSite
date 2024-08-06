@@ -93,7 +93,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'https://f9c7-34-19-72-37.ngrok-free.app'; // Update this URL with your current ngrok URL 
+        const API_URL = 'https://468a-35-247-187-76.ngrok-free.app'; // Update this URL with your current ngrok URL 
         let conversationHistory = [];
 
         async function sendMessage() {
@@ -130,13 +130,18 @@
                 chatBox.removeChild(typingIndicator);
                 
                 if (data.response) {
-                    appendMessage('bot-message', data.response);
+                    const formattedResponse = data.response.trim() === '\\n' ? 'I apologize, but I couldn\'t generate a proper response. Could you please try again or rephrase your request?' : data.response;
+                    appendMessage('bot-message', formattedResponse);
                     
                     conversationHistory.push(`Human: ${userMessage}`);
-                    conversationHistory.push(`Assistant: ${data.response}`);
+                    conversationHistory.push(`Assistant: ${formattedResponse}`);
                     
                     if (conversationHistory.length > 20) {
                         conversationHistory = conversationHistory.slice(-20);
+                    }
+        
+                    if (data.documents) {
+                        updateDocumentList(data.documents);
                     }
                 } else if (data.error) {
                     appendMessage('bot-message error-message', `Error: ${data.error}`);
@@ -156,13 +161,22 @@
             messageElem.className = className;
             const messageContent = document.createElement('span');
             messageContent.className = 'message';
-            messageContent.textContent = text;
+            messageContent.innerHTML = formatMessage(text);
             messageElem.appendChild(messageContent);
             chatBox.appendChild(messageElem);
             chatBox.scrollTop = chatBox.scrollHeight;
             return messageElem;
         }
-
+        
+        function formatMessage(text) {
+            // Convert newlines to <br> tags and escape HTML
+            return text.replace(/&/g, '&amp;')
+                       .replace(/</g, '&lt;')
+                       .replace(/>/g, '&gt;')
+                       .replace(/"/g, '&quot;')
+                       .replace(/'/g, '&#039;')
+                       .replace(/\n/g, '<br>');
+        }
         async function uploadDocument() {
             const fileInput = document.getElementById('file-input');
             const file = fileInput.files[0];
