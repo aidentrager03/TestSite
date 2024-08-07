@@ -170,8 +170,10 @@
             const chatBox = document.getElementById('chat-box');
             const messageElem = document.createElement('div');
             messageElem.className = className;
-            const messageContent = document.createElement('span');
+            const messageContent = document.createElement('pre');
             messageContent.className = 'message';
+            messageContent.style.whiteSpace = 'pre-wrap';
+            messageContent.style.wordWrap = 'break-word';
             messageContent.textContent = text;
             messageElem.appendChild(messageContent);
             chatBox.appendChild(messageElem);
